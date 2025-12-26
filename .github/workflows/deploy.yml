@@ -1,52 +1,29 @@
-# 部署到 GitHub Pages 的工作流
 name: Deploy to GitHub Pages
-
-# 触发条件：推送到主分支时运行（同时支持 main 和 master）
 on:
   push:
     branches:
       - main
       - master
 
-# 需要的权限：pages 写入权限用于发布 gh-pages
-permissions:
-  contents: read
-  pages: write
-
-# 工作流任务
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build project
+      - name: Build
         run: npm run build
 
-      # 调试步骤：列出构建产物，确保 publish_dir 存在
-      - name: Show build output
-        run: |
-          echo "Listing dist (or change to your actual publish dir)"
-          if [ -d "./dist" ]; then
-            ls -la ./dist
-          else
-            echo "Directory ./dist not found. Build likely failed or publish_dir is incorrect."
-            ls -la
-            exit 1
-          fi
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
